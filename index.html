@@ -6,15 +6,16 @@
 <title>AjoShield</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%9B%A1%EF%B8%8F</text></svg>">
 <style>
-:root{--bg:#0c0c0e;--card:#16161a;--line:#2a2a31;--text:#f4f4f5;--muted:#9a9aa5;--acc:#d9ff4f;--onacc:#10120a;--bad:#ff8a7a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f6f6f2;--card:#fff;--line:#deded6;--text:#15150f;--muted:#66665c;--acc:#5f7a00;--onacc:#fff;--bad:#b3261e}}
-:root[data-theme="dark"]{--bg:#0c0c0e;--card:#16161a;--line:#2a2a31;--text:#f4f4f5;--muted:#9a9aa5;--acc:#d9ff4f;--onacc:#10120a}
+:root{--bg:#0c0c0e;--card:#16161a;--line:#2a2a31;--text:#f4f4f5;--muted:#9a9aa5;--acc:#d9ff4f;--onacc:#10120a;--bad:#ff8a7a;--good:#4ade80;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f6f6f2;--card:#fff;--line:#deded6;--text:#15150f;--muted:#66665c;--acc:#5f7a00;--onacc:#fff;--bad:#b3261e;--good:#1a7a3c}}
+:root[data-theme="dark"]{--bg:#0c0c0e;--card:#16161a;--line:#2a2a31;--text:#f4f4f5;--muted:#9a9aa5;--acc:#d9ff4f;--onacc:#10120a;--good:#4ade80}
 *{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 main{max-width:520px;margin:0 auto;padding:16px 18px 48px}
 header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:28px}
-.logo{font-weight:800;font-size:20px;letter-spacing:-.02em}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:20px;letter-spacing:-.02em}
+.logo svg{display:block;flex:none}
 button{font:inherit;cursor:pointer;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--text);padding:10px 16px}
 button:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .pri{background:var(--acc);color:var(--onacc);border-color:var(--acc);font-weight:700}
@@ -32,8 +33,10 @@ small{color:var(--muted)}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
 .stats div{border:1px solid var(--line);border-radius:12px;padding:12px}
 .stats b{display:block;font-size:20px}
+#potBox{border-color:var(--acc)}
+#pot{font-size:30px;font-weight:700;color:var(--acc);line-height:1.1}
 .bar{height:8px;border-radius:8px;background:var(--line);overflow:hidden;margin-top:14px}
-.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .4s}
+.bar i{display:block;height:100%;background:var(--good);width:0;transition:width .4s}
 .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .msg{font-size:14px;margin:10px 0 0;color:var(--muted)}
 .msg.err{color:var(--bad)}
@@ -43,12 +46,21 @@ a{color:var(--acc)}
 footer{text-align:center;color:var(--muted);font-size:13px;margin-top:28px}
 .wrap{overflow-x:auto}
 input,select{font:inherit;width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--text);margin-bottom:10px}
+.tiny{font-size:11px;color:var(--muted);margin-top:4px}
 </style>
 </head>
 <body>
 <main>
 <header>
-<div class="logo">AjoShield</div>
+<div class="logo">
+<svg width="28" height="28" viewBox="0 0 100 100" role="img" aria-label="AjoShield logo">
+<path d="M50,8 L80,20 L80,50 C80,70 66,84 50,92 C34,84 20,70 20,50 L20,20 Z" fill="#3b7ee0"/>
+<path d="M50,37 A13,13 0 0 1 62,44" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+<path d="M50,63 A13,13 0 0 1 38,56" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+<rect x="45" y="45" width="10" height="10" transform="rotate(45 50 50)" fill="#ffffff"/>
+</svg>
+AjoShield
+</div>
 <button id="wbtn" class="pri" type="button">Connect Phantom</button>
 </header>
 <div id="wmsg" class="msg" hidden></div>
@@ -56,12 +68,12 @@ input,select{font:inherit;width:100%;padding:10px 12px;border-radius:12px;border
 <p>Familiar savings circles on Solana. One point of trust becomes transparent rules everyone can check.</p>
 <section class="card" id="circle">
 <div class="top"><h2>Market Women Ajo</h2><span class="paid">Protected</span></div>
-<small>Devnet demo with simulated Naira</small>
+<small>Devnet demo &mdash; real on-chain balance shown in Naira</small>
 <div class="stats">
 <div><small>Contribution</small><b>₦20,000</b><small>Weekly</small></div>
 <div><small>Members</small><b>10</b><small>10-person circle</small></div>
 <div><small>Paid this round</small><b id="cnt">2/4</b><small id="pct">50% recorded</small></div>
-<div><small>Pot</small><b id="pot">₦40,000</b><small>Held in circle vault</small></div>
+<div id="potBox"><small>Pot</small><b id="pot">₦40,000</b><small id="potSub">Held in circle vault</small></div>
 </div>
 <div class="bar" role="progressbar" aria-label="Round progress"><i id="fill"></i></div>
 </section>
@@ -102,6 +114,7 @@ input,select{font:inherit;width:100%;padding:10px 12px;border-radius:12px;border
 </section>
 <footer>MVP demo on Solana devnet. No real-money payouts.</footer>
 </main>
+<script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
 <script>
 (function(){
 var members=[
@@ -109,8 +122,19 @@ var members=[
 ];
 var round=1, history=[];
 var AMT=20000;
+var NGN_PER_USDC=1650;
+var connection=new solanaWeb3.Connection("https://api.devnet.solana.com");
+var USDC_MINT=new solanaWeb3.PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
+async function fetchRealUSDC(ownerAddress){
+try{
+var owner=new solanaWeb3.PublicKey(ownerAddress);
+var resp=await connection.getParsedTokenAccountsByOwner(owner,{mint:USDC_MINT});
+if(resp.value.length===0)return 0;
+return resp.value[0].account.data.parsed.info.tokenAmount.uiAmount;
+}catch(e){console.error(e);return null;}
+}
 var $=function(id){return document.getElementById(id)};
-var fmt=function(n){return "₦"+n.toLocaleString("en-NG")};
+var fmt=function(n){return "₦"+Math.round(n).toLocaleString("en-NG")};
 function render(){
 var paid=members.filter(function(m){return m.p}).length;
 var pct=Math.round(paid/members.length*100);
@@ -147,10 +171,17 @@ return null;
 }
 function msg(t,err){var m=$("wmsg");m.hidden=!t;m.textContent=t||"";m.className="msg"+(err?" err":"");}
 function short(k){return k.slice(0,4)+"..."+k.slice(-4)}
-function setConnected(k){
+async function setConnected(k){
 $("wbtn").textContent=short(k);
 $("wbtn").className="";
 msg("Connected to Solana devnet demo. Wallet "+short(k)+".");
+var bal=await fetchRealUSDC(k);
+if(bal!==null){
+var naira=bal*NGN_PER_USDC;
+$("pot").textContent=fmt(naira);
+$("potSub").innerHTML="Real on-chain balance<div class=\"tiny\">"+bal.toFixed(2)+" USDC on Solana devnet</div>";
+msg("Connected. Wallet "+short(k)+" \u2014 real on-chain balance: "+fmt(naira)+".");
+}
 }
 $("wbtn").onclick=async function(){
 var p=provider();
@@ -164,7 +195,7 @@ return;
 try{
 if(p.isConnected&&p.publicKey){await p.disconnect();$("wbtn").textContent="Connect Phantom";$("wbtn").className="pri";msg("Disconnected.");return;}
 var r=await p.connect();
-setConnected(r.publicKey.toString());
+await setConnected(r.publicKey.toString());
 }catch(e){msg("Connection was cancelled. Tap Connect Phantom to try again.",true);}
 };
 var p0=provider();

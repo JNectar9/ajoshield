@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AjoShield</title>
+<style>
+:root{--bg:#0c0c0e;--card:#16161a;--line:#2a2a31;--text:#f4f4f5;--muted:#9a9aa5;--acc:#d9ff4f;--onacc:#10120a;--bad:#ff8a7a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f6f6f2;--card:#fff;--line:#deded6;--text:#15150f;--muted:#66665c;--acc:#5f7a00;--onacc:#fff;--bad:#b3261e}}
+:root[data-theme="dark"]{--bg:#0c0c0e;--card:#16161a;--line:#2a2a31;--text:#f4f4f5;--muted:#9a9aa5;--acc:#d9ff4f;--onacc:#10120a}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:520px;margin:0 auto;padding:16px 18px 48px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:28px}
+.logo{font-weight:800;font-size:20px;letter-spacing:-.02em}
+button{font:inherit;cursor:pointer;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--text);padding:10px 16px}
+button:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.pri{background:var(--acc);color:var(--onacc);border-color:var(--acc);font-weight:700}
+h1{font-size:40px;line-height:1.05;letter-spacing:-.04em;margin:0 0 14px}
+h1 em{font-style:normal;color:var(--acc)}
+p{color:var(--muted);margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px}
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.av{width:38px;height:38px;border-radius:50%;background:var(--line);display:grid;place-items:center;font-weight:700;flex:none}
+.grow{flex:1;min-width:0}
+.grow b{display:block}
+small{color:var(--muted)}
+.paid{color:var(--acc);font-weight:700}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.stats div{border:1px solid var(--line);border-radius:12px;padding:12px}
+.stats b{display:block;font-size:20px}
+.bar{height:8px;border-radius:8px;background:var(--line);overflow:hidden;margin-top:14px}
+.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .4s}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.msg{font-size:14px;margin:10px 0 0;color:var(--muted)}
+.msg.err{color:var(--bad)}
+h2{margin:0;font-size:22px;letter-spacing:-.02em}
+h3{margin:0 0 4px;font-size:17px}
+a{color:var(--acc)}
+footer{text-align:center;color:var(--muted);font-size:13px;margin-top:28px}
+.wrap{overflow-x:auto}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="logo">AjoShield</div>
+  <button id="wbtn" class="pri" type="button">Connect Phantom</button>
+</header>
+
+<div id="wmsg" class="msg" hidden></div>
+
+<h1>Your circle.<br>Your rules.<br><em>Protected on-chain.</em></h1>
+<p>Familiar savings circles on Solana. One point of trust becomes transparent rules everyone can check.</p>
+
+<section class="card" id="circle">
+  <div class="top"><h2>Market Women Ajo</h2><span class="paid">Protected</span></div>
+  <small>Devnet demo with simulated Naira</small>
+  <div class="stats">
+    <div><small>Contribution</small><b>₦20,000</b><small>Weekly</small></div>
+    <div><small>Members</small><b>10</b><small>10-person circle</small></div>
+    <div><small>Paid this round</small><b id="cnt">2/4</b><small id="pct">50% recorded</small></div>
+    <div><small>Pot</small><b id="pot">₦40,000</b><small>Held in circle vault</small></div>
+  </div>
+  <div class="bar" role="progressbar" aria-label="Round progress"><i id="fill"></i></div>
+</section>
+
+<section class="card">
+  <h3>Contributions this round</h3>
+  <small>Tap "Mark paid" to record a contribution</small>
+  <div id="list" style="margin-top:8px"></div>
+</section>
+
+<section class="card" id="payout">
+  <small>Next payout</small>
+  <h3 id="who">Member 1</h3>
+  <p id="pmsg" style="margin:0 0 12px">₦80,000 is released once all 4 have paid.</p>
+  <button id="pbtn" type="button" disabled>Release payout</button>
+  <div id="hist" class="msg"></div>
+</section>
+
+<footer>MVP demo on Solana devnet. No real-money payouts.</footer>
+</main>
+
+<script>
+(function(){
+  var members=[
+    {n:"You",p:true},{n:"Member 2",p:true},{n:"Member 3",p:false},{n:"Member 4",p:false}
+  ];
+  var round=1, history=[];
+  var AMT=20000;
+  var $=function(id){return document.getElementById(id)};
+  var fmt=function(n){return "₦"+n.toLocaleString("en-NG")};
+
+  function render(){
+    var paid=members.filter(function(m){return m.p}).length;
+    var pct=Math.round(paid/members.length*100);
+    $("cnt").textContent=paid+"/"+members.length;
+    $("pct").textContent=pct+"% recorded";
+    $("pot").textContent=fmt(paid*AMT);
+    $("fill").style.width=pct+"%";
+    var l=$("list"); l.innerHTML="";
+    members.forEach(function(m,i){
+      var r=document.createElement("div"); r.className="row";
+      r.innerHTML='<div class="av">'+m.n[0]+'</div><div class="grow"><b>'+m.n+'</b><small>'+fmt(AMT)+' contribution</small></div>';
+      if(m.p){var s=document.createElement("span");s.className="paid";s.textContent="Paid";r.appendChild(s);}
+      else{var b=document.createElement("button");b.type="button";b.textContent="Mark paid";
+        b.onclick=function(){members[i].p=true;render();};r.appendChild(b);}
+      l.appendChild(r);
+    });
+    var full=paid===members.length;
+    $("who").textContent="Member "+round;
+    $("pmsg").textContent=fmt(members.length*AMT)+(full?" is ready to release.":" is released once all "+members.length+" have paid.");
+    $("pbtn").disabled=!full;
+    if(full)$("pbtn").className="pri";else $("pbtn").className="";
+    $("hist").innerHTML=history.map(function(h){return "Round "+h.r+": "+fmt(h.a)+" paid to "+h.w}).join("<br>");
+  }
+  $("pbtn").onclick=function(){
+    history.push({r:round,a:members.length*AMT,w:"Member "+round});
+    round++;
+    members=members.map(function(m){return {n:m.n,p:false}});
+    render();
+  };
+
+  /* Phantom connect: uses the provider Phantom injects, no libraries needed */
+  function provider(){
+    if(window.phantom&&window.phantom.solana&&window.phantom.solana.isPhantom)return window.phantom.solana;
+    if(window.solana&&window.solana.isPhantom)return window.solana;
+    return null;
+  }
+  function msg(t,err){var m=$("wmsg");m.hidden=!t;m.textContent=t||"";m.className="msg"+(err?" err":"");}
+  function short(k){return k.slice(0,4)+"..."+k.slice(-4)}
+  function setConnected(k){
+    $("wbtn").textContent=short(k);
+    $("wbtn").className="";
+    msg("Connected to Solana devnet demo. Wallet "+short(k)+".");
+  }
+  $("wbtn").onclick=async function(){
+    var p=provider();
+    if(!p){
+      var url="https://phantom.app/ul/browse/"+encodeURIComponent(location.href)+"?ref="+encodeURIComponent(location.origin);
+      $("wmsg").hidden=false;
+      $("wmsg").className="msg err";
+      $("wmsg").innerHTML='Phantom was not found in this browser. <a href="'+url+'">Open this page inside Phantom</a>, or install Phantom.';
+      return;
+    }
+    try{
+      if(p.isConnected&&p.publicKey){await p.disconnect();$("wbtn").textContent="Connect Phantom";$("wbtn").className="pri";msg("Disconnected.");return;}
+      var r=await p.connect();
+      setConnected(r.publicKey.toString());
+    }catch(e){msg("Connection was cancelled. Tap Connect Phantom to try again.",true);}
+  };
+  var p0=provider();
+  if(p0&&p0.on){p0.on("accountChanged",function(k){if(k)setConnected(k.toString());});}
+  render();
+})();
+</script>
+</body>
+</html>

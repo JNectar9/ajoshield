@@ -6,12 +6,14 @@
 <title>AjoShield</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%9B%A1%EF%B8%8F</text></svg>">
 <style>
-:root{--bg:#0c0c0e;--card:#16161a;--line:#2a2a31;--text:#f4f4f5;--muted:#9a9aa5;--acc:#d9ff4f;--onacc:#10120a;--bad:#ff8a7a;--good:#4ade80;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f6f6f2;--card:#fff;--line:#deded6;--text:#15150f;--muted:#66665c;--acc:#5f7a00;--onacc:#fff;--bad:#b3261e;--good:#1a7a3c}}
-:root[data-theme="dark"]{--bg:#0c0c0e;--card:#16161a;--line:#2a2a31;--text:#f4f4f5;--muted:#9a9aa5;--acc:#d9ff4f;--onacc:#10120a;--good:#4ade80}
+:root{--bg:#0a0e12;--card:#12181a;--line:#1f2b27;--text:#f4f4f5;--muted:#8a9490;--acc:#22e6a0;--onacc:#04140e;--bad:#ff8a7a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#splash{position:fixed;inset:0;background:#0a1730;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:9999;transition:opacity .4s ease}
+#splash svg{animation:pulse 1.1s ease-in-out infinite}
+#splash span{color:#fff;font-weight:800;font-size:20px;letter-spacing:-.02em}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:.8}}
 main{max-width:520px;margin:0 auto;padding:16px 18px 48px}
 header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:28px}
 .logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:20px;letter-spacing:-.02em}
@@ -36,7 +38,7 @@ small{color:var(--muted)}
 #potBox{border-color:var(--acc)}
 #pot{font-size:30px;font-weight:700;color:var(--acc);line-height:1.1}
 .bar{height:8px;border-radius:8px;background:var(--line);overflow:hidden;margin-top:14px}
-.bar i{display:block;height:100%;background:var(--good);width:0;transition:width .4s}
+.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .4s}
 .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .msg{font-size:14px;margin:10px 0 0;color:var(--muted)}
 .msg.err{color:var(--bad)}
@@ -44,12 +46,31 @@ h2{margin:0;font-size:22px;letter-spacing:-.02em}
 h3{margin:0 0 4px;font-size:17px}
 a{color:var(--acc)}
 footer{text-align:center;color:var(--muted);font-size:13px;margin-top:28px}
-.wrap{overflow-x:auto}
 input,select{font:inherit;width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--text);margin-bottom:10px}
 .tiny{font-size:11px;color:var(--muted);margin-top:4px}
+.tabs{display:flex;gap:8px;margin:12px 0}
+.tab{flex:1;text-align:center;padding:8px;border-radius:10px;border:1px solid var(--line);cursor:pointer;font-size:13px;color:var(--muted);background:transparent;font-weight:600}
+.tab.active{background:var(--acc);color:var(--onacc);border-color:var(--acc)}
+.gcard{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.gtop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.gname{font-weight:600}
+.gmeta{font-size:12px;color:var(--muted);margin-top:2px}
+.gbar{height:6px;border-radius:6px;background:var(--line);overflow:hidden;margin-top:8px}
+.gbar i{display:block;height:100%;background:var(--acc)}
+.gjoin{margin-top:10px;width:100%}
+.full{opacity:.6}
 </style>
 </head>
 <body>
+<div id="splash">
+<svg width="76" height="88" viewBox="0 0 100 116">
+<path d="M50,8 L80,20 L80,50 C80,70 66,84 50,92 C34,84 20,70 20,50 L20,20 Z" fill="#3b7ee0"/>
+<path d="M50,37 A13,13 0 0 1 62,44" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+<path d="M50,63 A13,13 0 0 1 38,56" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+<rect x="45" y="45" width="10" height="10" transform="rotate(45 50 50)" fill="#ffffff"/>
+</svg>
+<span>AjoShield</span>
+</div>
 <main>
 <header>
 <div class="logo">
@@ -66,6 +87,15 @@ AjoShield
 <div id="wmsg" class="msg" hidden></div>
 <h1>Your circle.<br>Your rules.<br><em>Protected on-chain.</em></h1>
 <p>Familiar savings circles on Solana. One point of trust becomes transparent rules everyone can check.</p>
+<section class="card" id="join">
+<h3>Find a savings circle</h3>
+<small>Join a weekly or monthly Ajo circle</small>
+<div class="tabs">
+<button type="button" class="tab active" id="tabWeekly">Weekly</button>
+<button type="button" class="tab" id="tabMonthly">Monthly</button>
+</div>
+<div id="groupList"></div>
+</section>
 <section class="card" id="circle">
 <div class="top"><h2>Market Women Ajo</h2><span class="paid">Protected</span></div>
 <small>Devnet demo &mdash; real on-chain balance shown in Naira</small>
@@ -135,6 +165,40 @@ return resp.value[0].account.data.parsed.info.tokenAmount.uiAmount;
 }
 var $=function(id){return document.getElementById(id)};
 var fmt=function(n){return "₦"+Math.round(n).toLocaleString("en-NG")};
+
+var groups=[
+{n:"Market Women Circle",freq:"weekly",amt:5000,joined:8,cap:10},
+{n:"Tailors Circle",freq:"weekly",amt:10000,joined:6,cap:10},
+{n:"Traders Circle",freq:"weekly",amt:20000,joined:3,cap:8},
+{n:"Civil Servants Circle",freq:"monthly",amt:50000,joined:7,cap:12},
+{n:"Landlords Circle",freq:"monthly",amt:100000,joined:4,cap:10},
+{n:"Students Circle",freq:"monthly",amt:15000,joined:9,cap:15}
+];
+var currentFreq="weekly";
+function renderGroups(){
+var l=$("groupList"); l.innerHTML="";
+groups.filter(function(g){return g.freq===currentFreq}).forEach(function(g,i){
+var idx=groups.indexOf(g);
+var pct=Math.round(g.joined/g.cap*100);
+var full=g.joined>=g.cap;
+var c=document.createElement("div"); c.className="gcard"+(full?" full":"");
+c.innerHTML='<div class="gtop"><div><div class="gname">'+g.n+'</div><div class="gmeta">'+fmt(g.amt)+' '+(g.freq==="weekly"?"/ week":"/ month")+'</div></div><div class="gmeta">'+g.joined+'/'+g.cap+' joined</div></div><div class="gbar"><i style="width:'+pct+'%"></i></div>';
+var b=document.createElement("button");
+b.type="button";
+b.className="gjoin"+(full?"":" pri");
+b.textContent=full?"Circle full":"Join circle";
+b.disabled=full;
+b.onclick=function(){
+groups[idx].joined++;
+renderGroups();
+};
+c.appendChild(b);
+l.appendChild(c);
+});
+}
+$("tabWeekly").onclick=function(){currentFreq="weekly";$("tabWeekly").className="tab active";$("tabMonthly").className="tab";renderGroups();};
+$("tabMonthly").onclick=function(){currentFreq="monthly";$("tabMonthly").className="tab active";$("tabWeekly").className="tab";renderGroups();};
+
 function render(){
 var paid=members.filter(function(m){return m.p}).length;
 var pct=Math.round(paid/members.length*100);
@@ -213,7 +277,16 @@ if(acct.length<10){$("withdrawMsg").className="msg err";$("withdrawMsg").hidden=
 $("withdrawMsg").className="msg";$("withdrawMsg").hidden=false;
 $("withdrawMsg").textContent="Processing... "+fmt(amt)+" sent to "+bank+" ****"+acct.slice(-4);
 };
+renderGroups();
 render();
+window.addEventListener("load",function(){
+setTimeout(function(){
+var s=$("splash");
+s.style.opacity="0";
+s.style.pointerEvents="none";
+setTimeout(function(){s.remove();},400);
+},700);
+});
 })();
 </script>
 </body>

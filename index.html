@@ -42,6 +42,7 @@ small{color:var(--muted)}
 .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .msg{font-size:14px;margin:10px 0 0;color:var(--muted)}
 .msg.err{color:var(--bad)}
+.msg.ok{color:var(--acc)}
 h2{margin:0;font-size:22px;letter-spacing:-.02em}
 h3{margin:0 0 4px;font-size:17px}
 a{color:var(--acc)}
@@ -137,12 +138,13 @@ AjoShield
 <option>Opay</option>
 <option>Moniepoint</option>
 </select>
-<input type="text" id="acctNum" placeholder="10-digit account number" maxlength="10">
+<input type="text" id="acctNum" placeholder="10-digit account number" maxlength="10" inputmode="numeric">
+<div id="acctName" class="msg ok" hidden></div>
 <input type="number" id="withdrawAmt" placeholder="Amount (₦)">
 <button id="withdrawBtn" class="pri" type="button">Withdraw to bank</button>
 <div id="withdrawMsg" class="msg" hidden></div>
 </section>
-<footer>MVP demo on Solana devnet. No real-money payouts.</footer>
+<footer>MVP demo on Solana devnet. No real-money payouts. Bank name lookup is simulated.</footer>
 </main>
 <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
 <script>
@@ -153,6 +155,7 @@ var members=[
 var round=1, history=[];
 var AMT=20000;
 var NGN_PER_USDC=1650;
+var realBalanceShown=false;
 var connection=new solanaWeb3.Connection("https://api.devnet.solana.com");
 var USDC_MINT=new solanaWeb3.PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
 async function fetchRealUSDC(ownerAddress){
@@ -177,7 +180,7 @@ var groups=[
 var currentFreq="weekly";
 function renderGroups(){
 var l=$("groupList"); l.innerHTML="";
-groups.filter(function(g){return g.freq===currentFreq}).forEach(function(g,i){
+groups.filter(function(g){return g.freq===currentFreq}).forEach(function(g){
 var idx=groups.indexOf(g);
 var pct=Math.round(g.joined/g.cap*100);
 var full=g.joined>=g.cap;
@@ -188,10 +191,7 @@ b.type="button";
 b.className="gjoin"+(full?"":" pri");
 b.textContent=full?"Circle full":"Join circle";
 b.disabled=full;
-b.onclick=function(){
-groups[idx].joined++;
-renderGroups();
-};
+b.onclick=function(){groups[idx].joined++;renderGroups();};
 c.appendChild(b);
 l.appendChild(c);
 });
@@ -204,7 +204,7 @@ var paid=members.filter(function(m){return m.p}).length;
 var pct=Math.round(paid/members.length*100);
 $("cnt").textContent=paid+"/"+members.length;
 $("pct").textContent=pct+"% recorded";
-$("pot").textContent=fmt(paid*AMT);
+if(!realBalanceShown){$("pot").textContent=fmt(paid*AMT);}
 $("fill").style.width=pct+"%";
 var l=$("list"); l.innerHTML="";
 members.forEach(function(m,i){
@@ -242,6 +242,7 @@ msg("Connected to Solana devnet demo. Wallet "+short(k)+".");
 var bal=await fetchRealUSDC(k);
 if(bal!==null){
 var naira=bal*NGN_PER_USDC;
+realBalanceShown=true;
 $("pot").textContent=fmt(naira);
 $("potSub").innerHTML="Real on-chain balance<div class=\"tiny\">"+bal.toFixed(2)+" USDC on Solana devnet</div>";
 msg("Connected. Wallet "+short(k)+" \u2014 real on-chain balance: "+fmt(naira)+".");
@@ -271,11 +272,32 @@ render();
 $("contribMsg").hidden=false;
 $("contribMsg").textContent="Contributed "+fmt(amt)+" to the circle vault.";
 };
+
+var FIRST=["Ngozi","Chidinma","Aisha","Amaka","Blessing","Funke","Grace","Ifeoma","Kemi","Zainab","Chioma","Fatima"];
+var LAST=["Okafor","Adeyemi","Bello","Eze","Okonkwo","Yusuf","Adamu","Nwosu","Balogun","Okoro","Abubakar","Chukwu"];
+function nameFromAccount(acct){
+var sum=0; for(var i=0;i<acct.length;i++){sum+=acct.charCodeAt(i)*(i+1);}
+var f=FIRST[sum%FIRST.length];
+var l=LAST[Math.floor(sum/7)%LAST.length];
+return f+" "+l;
+}
+$("acctNum").addEventListener("input",function(){
+var v=this.value.replace(/\D/g,"").slice(0,10);
+this.value=v;
+if(v.length===10){
+$("acctName").hidden=false;
+$("acctName").textContent="Account name: "+nameFromAccount(v);
+}else{
+$("acctName").hidden=true;
+}
+});
+
 $("withdrawBtn").onclick=function(){
 var bank=$("bankSel").value, acct=$("acctNum").value, amt=parseInt($("withdrawAmt").value)||0;
 if(acct.length<10){$("withdrawMsg").className="msg err";$("withdrawMsg").hidden=false;$("withdrawMsg").textContent="Enter a valid 10-digit account number.";return;}
+var name=nameFromAccount(acct);
 $("withdrawMsg").className="msg";$("withdrawMsg").hidden=false;
-$("withdrawMsg").textContent="Processing... "+fmt(amt)+" sent to "+bank+" ****"+acct.slice(-4);
+$("withdrawMsg").textContent="Processing... "+fmt(amt)+" sent to "+name+" \u2014 "+bank+" ****"+acct.slice(-4);
 };
 renderGroups();
 render();

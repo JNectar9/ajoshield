@@ -25,6 +25,8 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-appl
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .stats div{background:#04121f;border-radius:12px;padding:10px;display:flex;flex-direction:column}
 .stats span{font-size:12px;color:var(--muted)}.stats b{font-size:18px}.stats small{font-size:11px;color:var(--muted)}
+.bar{height:8px;background:#04121f;border-radius:99px;margin-top:12px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green);border-radius:99px;transition:width .4s}
 .seats,.log{list-style:none;margin:0;padding:0}
 .seats li,.log li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
 .seats li.done span:first-child{color:var(--green)}
@@ -149,16 +151,20 @@ sp.addEventListener("click",go);setTimeout(go,1100);})();
   }
 
   /* ---------- real on-chain recording ---------- */
-  async function sendMemo(text) {
+  async function sendMemos(texts) {
     await ensureLib();
     var p = getProvider();
     if (!p || !S.pubkey) throw new Error("Connect your wallet first.");
     var pk = new W.PublicKey(S.pubkey);
-    var tx = new W.Transaction().add(new W.TransactionInstruction({
-      keys: [{ pubkey: pk, isSigner: true, isWritable: false }],
-      programId: new W.PublicKey(MEMO_ID),
-      data: new TextEncoder().encode(text)
-    }));
+    var memoProgram = new W.PublicKey(MEMO_ID);
+    var tx = new W.Transaction();
+    texts.forEach(function (text) {
+      tx.add(new W.TransactionInstruction({
+        keys: [{ pubkey: pk, isSigner: true, isWritable: false }],
+        programId: memoProgram,
+        data: new TextEncoder().encode(text)
+      }));
+    });
     var latest = await connection.getLatestBlockhash();
     tx.recentBlockhash = latest.blockhash;
     tx.feePayer = pk;
@@ -166,6 +172,7 @@ sp.addEventListener("click",go);setTimeout(go,1100);})();
     await connection.confirmTransaction({ signature: res.signature, blockhash: latest.blockhash, lastValidBlockHeight: latest.lastValidBlockHeight }, "confirmed");
     return res.signature;
   }
+  function sendMemo(text) { return sendMemos([text]); }
 
   async function refreshBalance() {
     if (!S.pubkey) { S.balance = null; return; }
@@ -255,6 +262,23 @@ sp.addEventListener("click",go);setTimeout(go,1100);})();
         S.msg = "Seat " + seat + " contribution recorded on-chain.";
       });
     },
+    fillall: function (id) {
+      var c = byId(id);
+      return run("Recording all contributions", async function () {
+        var start = c.paid.length;
+        if (start >= c.size) throw new Error("Everyone has paid. Release the payout.");
+        var texts = [];
+        for (var seat = start + 1; seat <= c.size; seat++) {
+          texts.push("AJO|v1|contribute|" + c.id + "|round" + c.round + "|seat" + seat + "|NGN" + c.amount);
+        }
+        var sig = await sendMemos(texts);
+        for (var n = start + 1; n <= c.size; n++) {
+          c.paid.push({ sig: sig, label: c.name + ": seat " + n + " paid", ts: Date.now() });
+        }
+        addActivity(c.name + ": seats " + (start + 1) + "-" + c.size + " paid (1 transaction)", sig);
+        S.msg = "All " + c.size + " seats recorded on-chain. Pot is now " + naira(c.amount * c.size) + ".";
+      });
+    },
     release: function (id) {
       var c = byId(id);
       return run("Releasing payout", async function () {
@@ -306,10 +330,12 @@ sp.addEventListener("click",go);setTimeout(go,1100);})();
       '<div class="stats"><div><span>Contribution</span><b>' + naira(c.amount) + "</b><small>" + c.frequency + "</small></div>" +
       "<div><span>Members</span><b>" + c.size + "</b><small>seats</small></div>" +
       "<div><span>Paid this round</span><b>" + c.paid.length + "/" + c.size + "</b><small>round " + c.round + "</small></div>" +
-      "<div><span>Pot</span><b>" + naira(c.amount * c.paid.length) + "</b><small>recorded on-chain</small></div></div>" +
+      "<div><span>Pot</span><b>" + naira(c.amount * c.paid.length) + "</b><small>of " + naira(c.amount * c.size) + " target</small></div></div>" +
+      '<div class="bar"><i style="width:' + Math.round(100 * c.paid.length / c.size) + '%"></i></div>' +
       "<h4>Contributions this round</h4><ul class=\"seats\">" + seats + "</ul>" +
       '<p class="muted small">Demo mode: your wallet pays for each seat so you can see the full flow.</p>' +
       '<div class="actions"><button data-act="contribute" data-id="' + esc(c.id) + '"' + dis + (full ? " disabled" : "") + ">Contribute " + naira(c.amount) + "</button>" +
+      '<button class="ghost" data-act="fillall" data-id="' + esc(c.id) + '"' + dis + (full ? " disabled" : "") + ">Fill all seats (demo, 1 transaction)</button>" +
       '<button class="gold" data-act="release" data-id="' + esc(c.id) + '"' + dis + (full ? "" : " disabled") + ">Release " + naira(c.amount * c.size) + " to seat " + c.round + "</button></div></section>";
   }
 

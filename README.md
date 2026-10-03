@@ -2,7 +2,9 @@
 
 **Your circle. Your rules. Protected on-chain.**
 
-AjoShield brings Nigeria's trust-based Ajo/Esusu/Adashe rotating savings circles onto Solana. Every year, groups lose money when a "chairman" disappears with the pot — there's no record, no proof, and no recourse. AjoShield gives these circles a shared, transparent view everyone can check.
+> Seeking CertiK audit credits to secure our Anchor vault before mainnet. Handles user funds (N20k/week) — security is foundation.
+
+AjoShield brings Africa's trust-based rotating savings circles (Ajo, Esusu, Adashe, Chama, Stokvel, Susu) onto Solana.Every year, groups lose money when a "chairman" disappears with the pot — there's no record, no proof, and no recourse. AjoShield gives these circles a shared, transparent view everyone can check.
 
 ## Live demo
 🔗 ajoshield.vercel.app
@@ -18,6 +20,9 @@ We're building this transparently, stage by stage:
 - Connect a Solana wallet and view real devnet USDC balance (shown converted to Naira)
 - Track group contributions and release payouts
 - Simulated withdrawal to Nigerian banks (Access, GTBank, Zenith, UBA, and more)
+
+-  ## Why we need CertiK audit
+This demo uses Memo program for proof. Mainnet version will be Anchor PDA vault holding N80k-N200k per circle. One bug = women lose pot. We need professional audit before handling real funds. That's why we applied to CertiK track.
 
 ## Tech stack
 - Solana (devnet)
